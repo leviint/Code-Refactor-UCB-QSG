@@ -4,32 +4,26 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.InputMismatchException;
-
+import java.util.List;
 import java.util.Scanner;
 
 public class Projeto {
     private String nome;
     private LocalDate prazoEntrega;
-    private List<Funcionario> funcionarios = new ArrayList<>();
+    private final List<Funcionario> funcionarios = new ArrayList<>();
 
-    
     private static final DateTimeFormatter FORMATADOR = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    
     public Projeto() {
-        this.nome = "";
-        this.prazoEntrega = null;
+        this("", null);
     }
 
-    
     public Projeto(String nome, String prazoEntrega) {
         this.nome = nome;
-        setPrazoEntrega(prazoEntrega); 
+        setPrazoEntrega(prazoEntrega);
     }
 
-    
     public String getNome() {
         return nome;
     }
@@ -41,42 +35,31 @@ public class Projeto {
     public LocalDate getPrazoEntrega() {
         return prazoEntrega;
     }
-   
-    
-    public boolean prazoEntregaValido(String prazoEntrega) {
+
+    public boolean setPrazoEntrega(String prazoEntrega) {
         try {
-            this.prazoEntrega = LocalDate.parse(prazoEntrega, FORMATADOR); 
+            this.prazoEntrega = LocalDate.parse(prazoEntrega, FORMATADOR);
             return true;
-        } catch (DateTimeParseException e) {            
+        } catch (DateTimeParseException e) {
+            System.out.println("Formato de data inválido. Use o formato dd/MM/yyyy.");
             return false;
         }
     }
-    
-    public void setPrazoEntrega(String prazoEntrega) {
-        try {
-            this.prazoEntrega = LocalDate.parse(prazoEntrega, FORMATADOR); 
-        } catch (DateTimeParseException e) {
-            System.out.println("Formato de data inválido. Use o formato dd/MM/yyyy.");
-        }
-    }
 
-    
     public boolean estaDentroDoPrazo() {
-        LocalDate dataAtual = LocalDate.now(); 
-        return prazoEntrega.isAfter(dataAtual) || prazoEntrega.isEqual(dataAtual); 
+        return prazoEntrega != null && (prazoEntrega.isAfter(LocalDate.now()) || prazoEntrega.isEqual(LocalDate.now()));
     }
 
-    
     public void adicionarFuncionario(Funcionario funcionario) {
         funcionarios.add(funcionario);
-        System.out.println("Funcionário " + funcionario.getName() + " adicionado ao projeto.");
+        System.out.println("Funcionário " + funcionario.getNome() + " adicionado ao projeto.");
     }
 
     public void removerFuncionarioPorNome(String nome) {
-        Funcionario funcionarioParaRemover = encontrarFuncionarioPorNome(nome);
-        if (funcionarioParaRemover != null) {
-            funcionarios.remove(funcionarioParaRemover);
-            System.out.println("Funcionário " + funcionarioParaRemover.getName() + " removido do projeto.");
+        Funcionario funcionario = encontrarFuncionarioPorNome(nome);
+        if (funcionario != null) {
+            funcionarios.remove(funcionario);
+            System.out.println("Funcionário " + funcionario.getNome() + " removido do projeto.");
         } else {
             System.out.println("Funcionário não encontrado.");
         }
@@ -86,81 +69,69 @@ public class Projeto {
         if (funcionarios.isEmpty()) {
             System.out.println("Nenhum funcionário neste projeto.");
         } else {
-            System.out.println("Funcionários do projeto " + this.nome + ":");
-            for (int i = 0; i < funcionarios.size(); i++) {
-                Funcionario fun = funcionarios.get(i);
-                System.out.println((i + 1) + ". Nome: " + fun.getName() + ", Cargo: " + fun.getCargo() + ", Salário: " + fun.getSalario());
-            }
+            System.out.println("Funcionários do projeto " + nome + ":");
+            funcionarios.forEach(func -> System.out.println("Nome: " + func.getNome() + ", Cargo: " + func.getCargo() + ", Salário: " + func.getSalario()));
         }
     }
 
-    
     private Funcionario encontrarFuncionarioPorNome(String nome) {
-        for (Funcionario fun : funcionarios) {
-            if (fun.getName().equalsIgnoreCase(nome)) {
-                return fun;
-            }
-        }
-        return null; 
+        return funcionarios.stream()
+                .filter(func -> func.getNome().equalsIgnoreCase(nome))
+                .findFirst()
+                .orElse(null);
     }
 
     public void editarFuncionarioPorNome(String nome) {
-    Scanner sc = new Scanner(System.in);
-    
-    Funcionario funcionarioParaEditar = encontrarFuncionarioPorNome(nome);
-    if (funcionarioParaEditar != null) {
-        boolean entradaValida = false;
-
-        while (!entradaValida) {
-            try {
-                System.out.printf("Escolha o que deseja editar para o funcionário %s:\n[1] - Nome\n[2] - Cargo\n[3] - Salário\n", funcionarioParaEditar.getName());
-                int opcao = sc.nextInt();
-                sc.nextLine();
-
-                switch (opcao) {
-                    case 1 -> {
-                        System.out.printf("Digite o novo nome:\n");
-                        String novoNome = sc.nextLine();
-                        funcionarioParaEditar.setName(novoNome);
-                        System.out.println("Nome atualizado.");
-                        entradaValida = true;
-                    }
-                    case 2 -> {
-                        System.out.printf("Digite o novo cargo:\n");
-                        String novoCargo = sc.nextLine();
-                        funcionarioParaEditar.setCargo(novoCargo);
-                        System.out.println("Cargo atualizado.");
-                        entradaValida = true;
-                    }
-                    case 3 -> {
-                        System.out.printf("Digite o novo salário:\n");
-                        double novoSalario = sc.nextDouble();
-                        funcionarioParaEditar.setSalario(novoSalario);
-                        System.out.println("Salário atualizado.");
-                        entradaValida = true;
-                    }
-                    default -> {
-                        System.out.println("Opção inválida. Por favor, escolha uma opção entre 1 e 3.");
-                    }
-                }
-            } catch (InputMismatchException e) {
-                System.out.println("Opção inválida. Por favor, insira um número inteiro.");
-                sc.nextLine();
-            }
+        Funcionario funcionario = encontrarFuncionarioPorNome(nome);
+        if (funcionario != null) {
+            new FuncionarioEditor().editarFuncionario(funcionario);
+        } else {
+            System.out.println("Funcionário não encontrado.");
         }
-    } else {
-        System.out.println("Funcionário não encontrado.");
-    }        
-}
+    }
 
-
-
-    
     public void exibirPrazo() {
         if (prazoEntrega != null) {
             System.out.println("Prazo de entrega do projeto: " + prazoEntrega.format(FORMATADOR));
         } else {
             System.out.println("Prazo de entrega não definido.");
+        }
+    }
+
+    private static class FuncionarioEditor {
+        private final Scanner sc = new Scanner(System.in);
+
+        public void editarFuncionario(Funcionario funcionario) {
+            boolean entradaValida = false;
+            while (!entradaValida) {
+                try {
+                    System.out.printf("Escolha o que deseja editar para o funcionário %s:\n[1] - Nome\n[2] - Cargo\n[3] - Salário\n", funcionario.getNome());
+                    int opcao = sc.nextInt();
+                    sc.nextLine();
+
+                    switch (opcao) {
+                        case 1 -> {
+                            System.out.print("Digite o novo nome: ");
+                            funcionario.setNome(sc.nextLine());
+                            entradaValida = true;
+                        }
+                        case 2 -> {
+                            System.out.print("Digite o novo cargo: ");
+                            funcionario.setCargo(sc.nextLine());
+                            entradaValida = true;
+                        }
+                        case 3 -> {
+                            System.out.print("Digite o novo salário: ");
+                            funcionario.setSalario(sc.nextDouble());
+                            entradaValida = true;
+                        }
+                        default -> System.out.println("Opção inválida. Escolha uma opção entre 1 e 3.");
+                    }
+                } catch (InputMismatchException e) {
+                    System.out.println("Opção inválida. Insira um número inteiro.");
+                    sc.nextLine();
+                }
+            }
         }
     }
 }

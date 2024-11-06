@@ -2,43 +2,41 @@ package RefactoredCode;
 
 public class Funcionario {
 
-    private String Name;   
+    private String nome;   
     private String cargo;
-    private double Salario;
+    private double salario;
 
-    Funcionario(){
-        this.Name = null;
-        this.cargo = null;
-        this.Salario = 0;
+    public Funcionario() {
+        this(null, null, 0);
     }
 
-    Funcionario(String nome, String cargo, double salario){
-        this.Name = nome;
+    public Funcionario(String nome, String cargo, double salario) {
+        this.nome = nome;
         this.cargo = cargo;
-        this.Salario = salario;
-    }
-    
-
-    public void setSalario(double salarioNovo){
-        this.Salario = salarioNovo;
+        this.salario = salario;
     }
 
-    public double getSalario(){
-        return Salario;
+    public void setSalario(double salarioNovo) {
+        this.salario = salarioNovo;
     }
 
-    public void setCargo(String cargoNovo){
+    public double getSalario() {
+        return salario;
+    }
+
+    public void setCargo(String cargoNovo) {
         this.cargo = cargoNovo;
     }
 
-    public String getCargo(){
+    public String getCargo() {
         return cargo;
     }
 
-    public String getName(){
-        return Name;
+    public String getNome() {
+        return nome;
     }
-    public void setName(String nomeNovo){
-        this.Name = nomeNovo;
+
+    public void setNome(String nomeNovo) {
+        this.nome = nomeNovo;
     }
 }
